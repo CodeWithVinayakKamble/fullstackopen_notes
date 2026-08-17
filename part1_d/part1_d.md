@@ -64,7 +64,7 @@ setAll(allClicks.concat('L'));
 ```jsx
 setAll(allClicks.concat('R'));
 ```
-> **Concat method** is in-Immutable , it returns brand New Array[] with updated value;
+> **Concat method** is Immutable, it returns a brand New Array[] with the updated value;
 > the **join method** on the allClicks array, that joins all the items into a single string,separated by the string passed as the function parameter, which in our case is an empty space.
 
 * This is also one possibility but ,Why is this code fundamentally broken? (What rule does it break?)
@@ -373,9 +373,3 @@ const App = () => {
 - The official React documentation is worth checking out at some point, although most of it will become relevant only later on in the course.
 
 - * Also, everything related to class-based components is irrelevant to us;
-
-
-
-
-
-
