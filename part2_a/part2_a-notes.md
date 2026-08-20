@@ -2,7 +2,7 @@
 
 ## Rendering Collection 
 
-* Traditinal Way :-
+* Traditional Way :-
 ```jsx
 const App = ({notes}) => {
  
@@ -194,5 +194,20 @@ const Note = ({ note, onClickFn }) => {
   )
 }
 ```
+---
+
+## Part2_a and Exercises 2.1 to 2.5 Veridct
+* touches on the absolute core engine of React: The Virtual DOM.
+> Why is it mandatory?
+- Imagine you have a list of 5 input boxes on the screen, and you type your name into the 3rd box. Then, you press a button that deletes the 1st box.
+
+- Without keys, React gets confused. It looks at the new array and says: "Wait, there are only 4 boxes now. Let me just destroy all 5 boxes and redraw 4 new ones." If it does that, it deletes the name you just typed.
+
+- With keys, React says: "Ah, Box ID #1 was deleted. But Box ID #2, #3, #4, and #5 are still here. I will just delete Box #1 and leave the others alone." Your text stays perfectly safe. Keys prevent massive UI bugs!
 
 ---
+
+1. The Key Rule: The key goes on the absolute outermost box on the conveyor belt.
+2. The Curly Brace Rule: If you open an arrow function with {}, Return is God. If you forget it, you get the Invisible Man
+
+- If you want to be a rebel and *skip the return keyword*, `you have to use parentheses () instead of curly braces`, **which tells JavaScript to do an "implicit return"**. But honestly, just typing return is safer for now!
