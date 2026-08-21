@@ -3,7 +3,7 @@
 ## This is important since **we must never mutate state directly in React!**
 
 ## The Save
-- When the user clicks the <button type="submit">, the <form onSubmit={addNote}> triggers.
+- When the user clicks the `<button type="submit">`, the `<form onSubmit={addNote}>` triggers.
 
 - `event.preventDefault():` If you don't have this, the browser will act like it's 1999 and try to refresh the whole webpage to send the data to a server. This line says "Stop! Don't reload the page. React will handle this."
 
@@ -29,3 +29,6 @@
 
 ## Filtering Displayed Elements
 - Let's add some new functionality to our application that allows us to only view the important notes.
+
+- just showed how to use Array Method called `Filter`.
+---
