@@ -32,3 +32,38 @@
 
 - just showed how to use Array Method called `Filter`.
 ---
+
+## Exercise Veridict (Summury)
+
+### Early Return "trick" to kill a function;
+- (e.g)
+```jsx
+  const addPerson = (event) => {
+    event.preventDefault();
+
+    let isDuplicateName = persons.some((person) => person.name === newName);
+
+    if (isDuplicateName) {
+      alert(`${newName} is already added to phonebook`);
+      return
+    };
+
+    const personObject = {
+      name: newName
+    }
+
+    setPersons([...persons, personObject]);
+    setNewName('')
+  };
+```
+- You didn't lack JavaScript concepts. You just hadn't seen the Early Return "trick" used to stop a function before. You knew what return does (you use it in every React component). You just didn't realize you were allowed to use a blank return; as a kill switch.
+
+- if I did not put return after `alert` it will continuosly goes down read remaining script; unfortunetly app will get crash;
+
+- Practice it into vanila JS :-
+```jsx
+filter(),
+map()
+reduce(),
+some()
+```
