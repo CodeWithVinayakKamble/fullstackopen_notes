@@ -506,3 +506,132 @@ const App = () => {
 export default App;
 
 ```
+---
+
+## Mentor session and Verdicat of this chapter
+
+* Question 1: Explain the difference between POST, PUT, and DELETE in REST:
+
+  - Which ones need a data object (body) sent with them, and which one only needs a URL with an id?
+  What is the specific job of each method on the backend?
+
+  > q.1 =>
+  - post and put both needed body , post save new entry from newly typed userinput , put just needed updated body with id (location) , delete needs id only
+
+  - newly we used hardcoded data okay but in real case cant save this hardcoded data for while beacuse we need modify them and reder to internet back , so should be saved somewhere on internet okay , course introduced me backend fake-server okay so puted that data into that
+  to accces that we have method get , post , put , delete there are four main operations okay
+  get we getting fetching data from internete where we saved
+  post we are taking data from browser react app and then send to server 
+  put updating data on buisness logic
+  delete we destroying that entry from db or internet permemtly
+
+* Mentor hitted me with this
+
+1. Question 1: HTTP Methods (100% - PERFECT)
+
+2. Your answer here was rock-solid:
+
+  * **POST:** Sends a new body to create an entry.
+  * **PUT:** Sends an updated body + targeting ID to replace/update an entry.
+  * **DELETE:** Needs only the target ID URL to destroy an entry.
+  * **GET:** Reads/fetches data.
+
+* You completely understand REST CRUD. Flawless.
+---
+
+* Question 2: React Immutability & Array Methods
+
+  - When syncing our React state after a server update:
+
+    - Why do we use .map() with a ternary operator (? :) when updating an item (PUT)?
+    - Why do we use .filter() with !== when removing an item (DELETE)?
+    - Why are we forbidden from just doing persons.splice() or persons[i] = newPerson?
+
+  > q.2 =>
+  - well my basics are clear about arrays but this question seems to me new why we do use this methods 
+
+  - well as i know its new es6+ festure that handle trandional chores of mapping data and replace if else laadder , 
+
+  - well again this are all high ordered functions automate lots of things i mean save lot line of code we can use vanila method to filter out things 
+
+  - same answer i mean if js giving us power of mutating data very easy way why we would take long way ??
+
+  - Mentor hitted me with this
+
+    1. Question 2: Immutability & Array Methods (MISSED - CRITICAL REACT CONCEPT)
+
+    2. You answered that *.map()* and *.filter()* are just shorter ES6 syntax. While they are cleaner, *that is NOT the reason* **React forces us to use them.**
+
+    3. Here is the golden rule of **React: NEVER MUTATE STATE DIRECTLY.**
+
+    4. Why can't we use persons.splice() or persons[0] = newObj?
+
+      > Methods like .splice(), .push(), or direct assignment persons[0] = ... mutate (modify) the existing array in-place in memory.
+
+      > **React checks** if state changed by looking **at the memory reference of the array**. *If you modify the same array in place*, `React thinks: "The memory address is the same`, **nothing changed!"** *and it will NOT re-render the screen.*
+    
+    5. Why do we use .map() and .filter()?
+
+      > Both .map() and .filter() **never touch the old array**. **They create and return a BRAND NEW array in memory.** new Array means new memory refrence and this refrence react get from useState , hook state is flareGun for react and react re-renders the screen instantly!
+
+    6. **Rule to remember:** In React, *.map()* and *.filter()* are used because 
+    **they are pure / immutable** — they *return fresh copies instead of mutating existing state.*
+
+--- 
+
+* Question 3: Services & Separation of Concerns
+
+  Why do we extract our network requests into a separate file (services/persons.js) and return response.data instead of writing raw axios.get() or axios.post() directly inside App.jsx? What problem does this solve?
+
+
+> q.3 =>
+  - mostly App component will get massive time by time and We are if overrulling DRY so just defined once and accese whener we wanted and it will prevents from clutter may be noy sure
+  correct me here if wrong
+
+* Mentor hitted me with this
+
+  0. Question 3: Services & Separation of Concerns (85% - VERY GOOD)
+
+  1. You nailed the main points: preventing App.jsx from becoming massive, reducing clutter, and following DRY (Don't Repeat Yourself).
+
+  2. The extra bonus point: **It gives us Separation of Concerns.**
+  
+    * **App.jsx should only care about** *UI & User Interaction (buttons, forms, state).*
+
+    * **services/persons.js should only care about** *HTTP & Network Protocols (Axios, URLs, formatting response.data)*
+
+    * If your backend URL changes tomorrow from localhost:3001 to api.myphonebook.com, you only have to edit one line in persons.js, and App.jsx never has to change at all.
+
+---
+
+* Question 4: Promises and Errors (.catch)
+
+  Imagine you try to update a person's phone number using axios.put(), but someone else deleted that person from the database 5 seconds ago (the server responds with a 404 Not Found error):
+
+    - What happens to your .then() block?
+    - What block runs instead, and what two things should you do inside of it to clean up the UI?
+
+> q.4 => 
+  - not sure
+  - handle the erroe by .error () blockGame belowe above
+
+* Mentor hitted me with this
+  
+  1. Question 4: Promises and Errors (MISSED - NEEDS REINFORCEMENT)
+
+  2. Let's review what happens when an API call fails (like a 404 Not Found):
+
+    1. What happens to .then()?
+
+      * It is completely skipped. **JavaScript will not run a single line inside .then()**. 
+
+    2. What runs instead?
+
+      * The .catch(error => { ... }) block (remember the method name is .catch(), not .error()).
+
+    3. What 2 things should you do inside .catch()?
+
+      * **Notify the user:** alert("This person was already removed from the server")
+
+      * **Clean the UI:** **Remove the ghost person from React state** so the UI matches reality: **setPersons(persons.filter(p => p.id !== id))** why ? *db changes* nothing to do with *reactState* we have to take care of it
+    
