@@ -1,0 +1,54 @@
+{
+  "tasks": [
+    {
+      "id": "1",
+      "title": "Fix memory leak in Navbar component",
+      "priority": "high",
+      "category": "bug",
+      "status": "Pending"
+    },
+    {
+      "id": "2",
+      "title": "Implement Dark Mode theme toggle",
+      "priority": "low",
+      "category": "feature",
+      "status": "Completed"
+    },
+    {
+      "id": "3",
+      "title": "Add JWT authentication to login form",
+      "priority": "high",
+      "category": "feature",
+      "status": "In progress"
+    },
+    {
+      "id": "4",
+      "title": "Resolve 404 error on user profile avatar",
+      "priority": "medium",
+      "category": "bug",
+      "status": "Pending"
+    },
+    {
+      "id": "5",
+      "title": "Optimize image loading on mobile devices",
+      "priority": "medium",
+      "category": "feature",
+      "status": "In progress"
+    },
+    {
+      "id": "6",
+      "title": "Fix broken checkout button on Safari",
+      "priority": "high",
+      "category": "bug",
+      "status": "Completed"
+    },
+    {
+      "id": "7",
+      "title": "Update README documentation with setup steps",
+      "priority": "low",
+      "category": "feature",
+      "status": "Pending"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}

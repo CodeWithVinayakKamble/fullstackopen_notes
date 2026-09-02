@@ -1,0 +1,64 @@
+.notification {
+    background-color: rgb(204, 203, 203);
+    font-size: 1.2rem;
+    border: 2px solid;
+    padding: 0.8rem;
+    margin-block-end: 0.5rem;
+}
+
+.success {
+    color: green;
+    border-color: green;
+}
+
+.error {
+    color: red;
+    border-color: red;
+}
+
+.taskList {
+    display: grid;
+    max-inline-size: 900px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.item {
+    border: 1px solid black;
+    padding: 1rem;
+    margin-block-start: 1rem;
+}
+
+.buttonBox {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.addTaskBtn {
+    display: inline-block;
+    max-inline-size: 200px;
+}
+
+form {
+    display: flex;
+    gap: 1rem;
+    flex-direction: column;
+    inline-size: 400px;
+}
+
+label,
+input {
+    display: inline-block;
+}
+
+.titleInput {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filterSearch {
+    display: flex;
+    gap: 0.5rem;
+    margin-block-end: 1rem;
+    align-items: center;
+}
