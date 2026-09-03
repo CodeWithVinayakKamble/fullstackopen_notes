@@ -327,6 +327,8 @@ app.get('/api/notes/:id', (request, response) => {
     const app = express()
 
 
+
+    <!-- Middleware -->
     app.use(express.json())
 
     //...
@@ -349,8 +351,198 @@ app.get('/api/notes/:id', (request, response) => {
 
         - ⚠️ If you forget app.use(express.json()), **request.body will always be undefined**!
 
+    ### Middleware
+    * **express.json()** IS a **middleware**! Whenever a **request arrives, express.json() intercepts** it, **parses the raw text into a JS object**, and **passes it forward to your app.post() route!**
+
+
 
 ---
+
+## About HTTP request types
+
+* The HTTP standard talks about two properties related to request types, **safety** and **idempotency**.
+
+* **Safety** means that the executing request must not **_cause any side effects_** on the **server**.
+
+* By side effects, we mean that **the state of the database must not change as a result of the request**, and the response must only return data that already exists on the server.
+
+* `Request`(**browser**) => `backend`(**processing request.body from Safety messures**)
+
+    * ==> `if`(**Found threats or irrelevant stuff**) ==> handle it on server, response back to **browser** with approprite `Error`
+
+    * ==> `else`(**Heads towards database**)
+
+* **"Safe Methods"** :
+
+    - A "Safe" method is a request that ONLY READS data and NEVER modifies or destroys anything on the server.
+
+    - GET is a Safe method because reading data never changes the database.
+
+
+* **"Idempotent Methods"**
+
+    - **"Idempotent"** (pronounced eye-dem-po-tent) means: 
+    Running a request 1 time produces the EXACT SAME result as running it 100 times in a row!
+
+    - Let's look at the Elevator Button vs ATM Button analogy:
+
+        * The Elevator Button (_Idempotent_):
+
+            - If you press the elevator button 1 time, the elevator comes to your floor. If you aggressively press the elevator button 50 times in a row, **the elevator still just comes to your floor! The end result is identical.**
+
+        * he ATM Cash Button (_Non-Idempotent / POST_):
+
+            - If you press "Withdraw $100" 1 time, you get $100. If you press "Withdraw $100" 5 times, you just withdrew $500 and your bank account is empty!
+
+
+    
+    * **GET is Idempotent**: Fetching data 10 times gives the same result.
+
+    * **PUT is Idempotent**: If you update Arto's number to "123-456", running that exact update 10 times still leaves his number as "123-456".
+
+    * **DELETE is Idempotent**: Deleting Note #3 leaves Note #3 deleted. Deleting it 5 more times still means Note #3 is deleted.
+
+    * **POST is NOT Idempotent**: If you send a POST request to create "Arto" 5 times, the server will create 5 separate duplicate records with 5 new IDs!
+
+---
+
+## Middleware FSO
+
+* The Express json-parser used earlier is a middleware.
+
+* Middleware are functions that can be used for handling request and response objects.
+
+* In practice, you can use several middlewares at the same time. When you have more than one, they're executed one by one in the order that they were listed in the application code.
+
+* Middleware is a function that receives three parameters:
+
+    ```js
+    const requestLogger = (request, response, next) => {
+    console.log('Method:', request.method)
+    console.log('Path:  ', request.path)
+    console.log('Body:  ', request.body)
+    console.log('---')
+    next() <===
+    }
+    ```
+
+    * At the end of the function body, the next function that was passed as a parameter is called **next**. The next function **yields control to the next middleware**.
+
+    * Middleware is used like this:
+        ```js
+        app.use(express.json())
+        app.use(requestLogger)
+        ```
+
+* Middleware functions have to be used before routes when we want them to be executed by the route event handlers. 
+
+* Sometimes, we want to use middleware functions after routes. We do this when the middleware functions are only called if no route handler processes the HTTP request.
+
+    * This middleware will be used for catching requests made to non-existent routes
+    ```js
+    const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+    }
+
+    app.use(unknownEndpoint)
+    ```
+
+## Middleware by Mentor
+
+* Imagine an Express server as a Factory **Conveyor Belt** => automatic vertical elevator/pusher
+
+* Whenever an **HTTP request arrives from a browser or Postman**, **it is placed** on the **conveyor belt** and **passes through** several Stations **(Middleware Functions)** in order from top to bottom:
+
+    ```
+        [ Request Arrives ]
+            ⬇️
+
+        [ Station 1: express.json() ]  --> (Parses raw text into request.body)
+            ⬇️ calls next()
+
+        [ Station 2: Morgan Logger ]   --> (Logs request details to terminal)
+            ⬇️ calls next()
+
+        [ Station 3: Your Routes ]     --> (app.get, app.post, app.delete)
+            ⬇️ (If no route matched)
+
+        [ Station 4: Unknown Endpoint ] --> (Returns 404 error)
+    ```
+
+* Why Middleware Functions have 3 Parameters: (request, response, next)
+
+    * Every middleware function in Express looks like this:
+    ```js
+    const myMiddleware = (request, response, next) => {
+    console.log('A request passed through Station 1!');
+
+    // 🚨 CRITICAL: You MUST call next()!
+    next(); 
+    };
+
+    app.use(myMiddleware);
+    ```
+
+* What is next()?
+
+    * next() is the "Push Conveyor Belt Forward" button!
+
+* Why the Order of Middleware Matters:
+
+    * **express.json() and loggers must be at the TOP** : They need to parse and log the request before it reaches your routes.
+
+    * **unknownEndpoint (404 catch-all) must be at the VERY BOTTOM** : If you put the 404 handler at the top, it will intercept and block every single request before your routes even have a chance to run!
+
+---
+
+## Morgan - Logger
+
+### basic setup of morgan logger
+
+* **npm install morgan**
+
+* const morgan = require('morgan');
+
+    * // Use the pre-built 'tiny' format
+    app.use(morgan('tiny'));
+
+* What it does:
+    * Whenever you visit http://localhost:3001/api/persons, Morgan instantly prints this in your terminal:
+
+    * GET /api/persons 200 245 - 2.154 ms
+
+        - (Method(GET), URL(/api/persons), Status Code(200), Response Size(245), Time taken in milliseconds) - (2.154ms).
+
+    * 
+
+###  Custom Morgan Token (Logging the POST Body!)
+
+* By default, Morgan does not log the request body. But Morgan lets you create a Custom Token using **morgan.token()**!
+
+    * How to create the custom token:
+
+        1. Create a token called 'body' that stringifies request.body:
+
+            ```js
+            // Creates a custom Morgan token named :body
+            morgan.token('body', (request, response) => {
+            return JSON.stringify(request.body);
+            });
+            ```
+
+        2. Configure Morgan using a custom format string that includes :body:
+
+            ```js
+            app.use( morgan(':method :url :status :res[content-length] - :response-time ms :body') );
+            ```
+    
+* The Result in your Terminal:
+
+    * When you send a **GET /api/persons, it prints: GET /api/persons 200 245 - 2.154 ms {}**
+
+    * When you send a POST /api/persons with a new contact, it prints: 
+    **POST /api/persons 200 64 - 4.231 ms {"name":"Liisa Marttinen","number":"040-243563"}!**
+
 
 
 
