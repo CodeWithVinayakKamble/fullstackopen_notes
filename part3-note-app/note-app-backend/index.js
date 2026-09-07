@@ -1,10 +1,11 @@
 // ================================== //
 // Imports & Dependencies
 // ================================== //
+require('dotenv').config()
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
-
+const Note = require('./models/note');
 
 // ================================== //
 // App Initialization
@@ -18,111 +19,85 @@ const app = express();
 app.use(cors());
 app.use(express.static('dist'));
 app.use(express.json());
-// app.use(
-//     morgan(':method :url :status :res[content-length] - :response-time ms :body')
-// )
-
-
-// ================================== //
-// Database / Models
-// ================================== //
-
-let notes = [
-    {
-        "id": "1",
-        "content": "HTML is easy",
-        "important": false
-    },
-    {
-        "id": "2",
-        "content": "Browser can execute only JavaScript",
-        "important": false
-    },
-    {
-        "id": "3",
-        "content": "GET and POST are the most important methods of HTTP protocol",
-        "important": false
-    }
-];
-
+morgan.token('body', (req, res) => JSON.stringify(req.body))
+app.use(
+    morgan(':method :url :status :res[content-length] - :response-time ms :body')
+)
 
 // ================================== //
 // Route Handlers
 // ================================== //
+
 app.get('/api/notes', (request, response) => {
-    response.json(notes)
+    Note.find({}).then(notes => {
+        response.json(notes)
+    })
 });
 
 // ============================================== //
-
-app.get('/api/notes/:id', (request, response) => {
-    const id = request.params.id;
-    const note = notes.find(note => note.id === id);
-
-    if (!note) {
-        return response.status(404).end()
-    }
-    response.json(note)
-});
-
-// ============================================== //
-
-const generateNewId = () => {
-    const newId = String(Math.floor(Math.random() * 1000000));
-    return newId;
-};
 
 app.post('/api/notes', (request, response) => {
-
     const body = request.body;
 
     if (!body.content) {
-        return response.status(400).json({ error: "content is missing" })
+        return response.status(400).json({ error: "content missing" })
     };
 
-    const newNoteObj = {
-        id: generateNewId(),
+    const note = new Note({
         content: body.content,
-        important: Math.random() < 0.5
-    };
+        important: body.important || false
+    });
 
-    notes = [...notes, newNoteObj];
-    response.json(newNoteObj)
+    note.save().then(savedNote => {
+        response.json(savedNote)
+    });
 })
+// ============================================== //
+
+app.get('/api/notes/:id', (request, response, next) => {
+    const id = request.params.id;
+    Note.findById(id)
+        .then(note => {
+            if (note) {
+                response.json(note)
+            } else {
+                response.status(404).end()
+            }
+        })
+        .catch(error => next(error))
+});
 
 // ============================================== //
 
-app.delete('/api/notes/:id', (request, response) => {
+app.delete('/api/notes/:id', (request, response, next) => {
 
     const id = request.params.id;
-    notes = notes.filter(note => note.id !== id);
-    response.status(204).end();
+    Note.findByIdAndDelete(id)
+        .then(() => {
+            response.status(204).end();
+        })
+        .catch(error => next(error))
 
-})
+});
 
 // ============================================== //
 
-app.put('/api/notes/:id', (request, response) => {
-
+app.put('/api/notes/:id', (request, response, next) => {
     const id = request.params.id;
-    const body = request.body;
+    const { content, important } = request.body;
 
-    const note = notes.find(note => note.id === id);
-
-    if (!note) {
-        return response.status(404).end()
+    const note = {
+        content: content,
+        important: important
     };
 
-    const updatedNote = {
-        id: body.id,
-        content: body.content,
-        important: body.important
-    };
-
-    notes = notes.map(note => note.id === id ? updatedNote : note);
-
-    response.json(updatedNote)
+    Note.findByIdAndUpdate(id, note, { new: true })
+        .then(updatedNote => {
+            response.json(updatedNote)
+        })
+        .catch(error => next(error))
 })
+
 
 // ================================== //
 // Error & Fallback Middlewares
@@ -133,12 +108,28 @@ const unknownEndpoint = (request, response) => {
 };
 app.use(unknownEndpoint);
 
+// ============================================== //
+
+const errorHandler = (error, request, response, next) => {
+
+    console.log(error.message)
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    }
+    next(error)
+};
+app.use(errorHandler);
+
+// If you put errorHandler at the top before your routes, Express would never be able to catch errors from your routes because the request hasn't even reached the routes yet!
+
+// That is why errorHandler must always be the last app.use() at the bottom of your file.
+
 
 // ================================== //
 // Server Listener
 // ================================== //
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
     console.log(`Server is live on : http://localhost:${PORT}`);
 });
