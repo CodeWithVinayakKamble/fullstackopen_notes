@@ -6,6 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const Note = require('./models/note');
+const { json } = require('node:stream/consumers');
 
 // ================================== //
 // App Initialization
@@ -27,13 +28,12 @@ app.use(
 // ================================== //
 // Route Handlers
 // ================================== //
-
 app.get('/api/notes', (request, response) => {
-    Note.find({}).then(notes => {
-        response.json(notes)
-    })
+    Note.find({})
+        .then(notes => {
+            response.json(notes)
+        })
 });
-
 // ============================================== //
 
 app.post('/api/notes', (request, response) => {
@@ -72,11 +72,13 @@ app.get('/api/notes/:id', (request, response, next) => {
 app.delete('/api/notes/:id', (request, response, next) => {
 
     const id = request.params.id;
+
     Note.findByIdAndDelete(id)
         .then(() => {
             response.status(204).end();
         })
         .catch(error => next(error))
+
 
 });
 
