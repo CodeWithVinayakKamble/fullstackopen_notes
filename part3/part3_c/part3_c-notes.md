@@ -322,3 +322,55 @@
     * URL = Uniform Resource Locator (The specific location / address)
 
     * **The Rule: _Every URL is a URI, but not every URI is a URL_.**
+
+---
+
+## Why do we need returnedObject.id = returnedObject._id.toString()? What is MongoDB's raw _id, and why does our React frontend need id as a string?
+
+* **noteSchema**: The Blueprint & Rulebook (defines field types, validation rules, and JSON formatting).
+
+* **Note Model**: The Constructor Function (the actual tool that allows us to perform database queries like .find(), .save(), and .findByIdAndUpdate()).
+
+* **_id.toString()**: In MongoDB, _id is a special binary ObjectId object. Converting it to a clean string id ensures our React frontend can use note.id cleanly as a key and URL parameter without weird object serialization bugs.
+
+---
+
+### What happens inside Express when a route calls next(err) with an argument? Where does the error go?
+
+### How does Express distinguish between a normal middleware (3 parameters) and an error-handling middleware (4 parameters)?
+
+* In JavaScript, every function has a built-in property called fn.length that tells you how many arguments the function accepts
+
+* When you call next(err) with an argument, Express looks through your middlewares and says: 👉 "Skip all functions with length 3, and only execute functions with length === 4!" That is the secret under the hood!
+
+---
+
+```js
+// Method 1:
+const updateNumber1 = (id, newNumber) => {
+    const person = persons.find(p => p.id === id)
+    person.number = newNumber
+    setPersons(persons)
+}
+
+// Method 2:
+const updateNumber2 = (id, newNumber) => {
+    const updatedPersons = persons.map(p => 
+        p.id === id ? { ...p, number: newNumber } : p
+    )
+    setPersons(updatedPersons)
+}
+```
+
+* Why Method 1 fails:
+
+    * setPersons(persons) passes the exact same memory reference address to React.
+    * React checks: oldPersons === newPersons ➡️ true!
+    * React assumes nothing changed and refuses to re-render the screen.
+
+* Why Method 2 succeeds:
+
+    * .map() allocates a brand-new array in heap memory.
+    * { ...p, number: newNumber } allocates a brand-new object in heap memory.
+    * React checks: oldPersons === newPersons ➡️ false!
+    * React immediately detects the new memory reference and re-renders the UI with the updated number!
