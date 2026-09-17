@@ -1,18 +1,28 @@
 const notesRouter = require('express').Router();
+const onSlashRouter = require('express').Router()
 const Note = require('../models/note')
 
 
 // ================================== //
 // Route Handlers
 // ================================== //
+
+onSlashRouter.get('/', (request, response) => {
+    response.send(`<h1>Notes App Backend => /api/notes</h1>`)
+})
+
+
+// ============================================== //
+
+
 notesRouter.get('/', (request, response) => {
     Note.find({})
         .then(notes => {
             response.json(notes)
         })
 })
-// ============================================== //
 
+// ============================================== //
 
 notesRouter.get('/:id', (request, response, next) => {
     const id = request.params.id
@@ -74,7 +84,7 @@ notesRouter.put('/:id', (request, response, next) => {
         important: important
     }
 
-    Note.findByIdAndUpdate(id, note, { returnDocument: 'after', runValidators: true, context: 'query' }) 
+    Note.findByIdAndUpdate(id, note, { returnDocument: 'after', runValidators: true, context: 'query' })
         // {new:"true"} is depreciated , Use `returnDocument: 'after'` instead Mongoose still supports { new: true } for backward compatibility
         .then(updatedNote => {
             response.json(updatedNote)
@@ -82,4 +92,4 @@ notesRouter.put('/:id', (request, response, next) => {
         .catch(error => next(error))
 })
 
-module.exports = notesRouter
+module.exports = { notesRouter, onSlashRouter }

@@ -7,7 +7,8 @@ const cors = require('cors')
 const config = require('./utils/config')
 const logger = require('./utils/logger')
 const middleware = require('./utils/middleware')
-const notesRouter = require('./controllers/notes')
+const notesRouter = require('./controllers/notes').notesRouter
+const onSlashRouter = require('./controllers/notes').onSlashRouter
 
 // ================================== //
 // App Initialization
@@ -29,11 +30,11 @@ mongoose.connect(config.MONGODB_URI)
 // Pre-Route Middlewares
 // ================================== //
 app.use(cors())
-app.use(express.static('dist'))
 app.use(express.json())
 
 app.use(middleware.requestLogger)   // 1. Log the incoming request FIRST
 
+app.use('/', onSlashRouter)
 app.use('/api/notes', notesRouter)  // 2. Then handle the route!
 
 app.use(middleware.unknownEndpoint) // 3. Fallback for unmatched URLs
