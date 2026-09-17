@@ -13,7 +13,7 @@ const onSlashRouter = require('./controllers/notes').onSlashRouter
 // ================================== //
 // App Initialization
 // ================================== //
-const app = express();
+const app = express()
 
 // ================================== //
 // Data base connection init
@@ -21,8 +21,8 @@ const app = express();
 logger.info('connecting to MongoDB Atlas...')
 
 mongoose.connect(config.MONGODB_URI)
-    .then(() => logger.info('connected to MongoDB'))
-    .catch(err => logger.error('error connection to MongoDB:', err.message))
+  .then(() => logger.info('connected to MongoDB'))
+  .catch(err => logger.error('error connection to MongoDB:', err.message))
 //
 
 

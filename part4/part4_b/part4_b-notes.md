@@ -44,7 +44,7 @@
 
 ---
 
-## Process to init Automated Integration (Unit tetsing)
+## Test Environment
 
 * _Step 1_: **Isolating the Test Database (NODE_ENV)**
 
@@ -95,10 +95,139 @@
         ---
         4. In utils/config.js, update how MONGODB_URI is exported:
 
-            * If process.env.NODE_ENV === 'test', use process.env.TEST_MONGODB_URI
-            * Otherwise, use process.env.MONGODB_URI
+            ```js
+            const MONGODB_URL = process.env.MONGODB_URI
+            const TEST_MONGODB_URI = process.env.TEST_MONGODB_URI
 
+            const MONGODB_URI = process.env.NODE_ENV === 'test' ? TEST_MONGODB_URI : MONGODB_URL
+            ```
+---
 
+## supertest - tool that helps to Testing API endpoints
+
+* HTTP routes (GET /api/notes, POST /api/notes, status codes, headers, response JSON) we will test here
+
+* How supertest works under the hood: ?
+
+    * Normally, **Express needs app.listen(PORT)** to bind to a network port (e.g., 3003) so you can send requests from **Postman or a browser**.
+
+    1. You pass your Express app object into supertest
+    ```js
+    const supertest = require('supertest')
+    const app = require('../app')
+    const api = supertest(app)
+    ```
+
+    2. supertest wraps the Express app into a virtual test server internally. It does NOT need index.js or app.listen()
+
+    3. It allows you to write assertions on HTTP responses directly:
+    ```js
+    await api
+    .get('/api/notes')
+    .expect(200)
+    .expect('Content-Type', /application\/json/)
+    ```
+---
+
+### Key Requirements in Modern Node (node:test):
+
+* In the course's notes-backend, a test file for notes API (e.g. tests/note_api.test.js) has 3 main parts:
+
+    1. **Setup & Imports**:
+
+        * test, after, describe from node:test
+        * assert from node:assert
+        * mongoose (to close the connection when tests finish!)
+        * app from ../app
+        * supertest wrapping app into api
+
+        ```js
+        const mongoose = require('mongoose')
+        const supertest = require('supertest')
+
+        const app = require('../app')
+
+        const api = supertest(app)
+
+        ```
+    
+    ---
+
+    2. **The Test Case**:
+
+        * Marking the test callback function as async:
+
+        ```js
+        test('notes are returned as json', async () => {
+        await api
+            .get('/api/notes')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+        })
+        ```
+
+    ---
+
+    3. Teardown (after):
+
+        - When all tests finish, Mongoose is still holding an active open socket connection to MongoDB Atlas.
+        If you don't close it, Node test runner will hang forever waiting for connections to close!
+        We use after(async () => { await mongoose.connection.close() }) to cleanly disconnect from MongoDB when all tests in the file are done.
+
+        ```js
+        test('notes are returned as json', async () => {
+        await api
+            .get('/api/notes')
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+        })
+
+        after(async () => {
+        await mongoose.connection.close()
+        })
+        ```
+---
+
+### Quick Check:
+* Look at that regex in **.expect('Content-Type', /application\/json/)**. Do you remember why the course uses a Regular Expression /application\/json/ instead of an exact string 'application/json'?
+
+Think back to Part 3 when we inspected response headers! What extra text does Express append to Content-Type?
+
+* `raw header that Express sends back when you return JSON:`
+
+    - `Content-Type: application/json; charset=utf-8`
+    * Notice the extra part: **; charset=utf-8**.
+
+* Why Regex /application\/json/ is used: ??
+
+    - If you use an exact string:
+
+        ```js
+        .expect('Content-Type', 'application/json') // ❌ FAILS!
+        ```
+
+        * Because **'application/json'** **is NOT strictly equal to** **'application/json; charset=utf-8'**.
+
+    - If you use a Regular Expression:
+
+        ```js
+        expect('Content-Type', /application\/json/) // ✅ PASSES!
+        ```
+
+        * Because the regex only checks: "Does the header contain the text application/json?"
+
+        * It ignores whatever comes after the semicolon (like charset=utf-8).
+---
+
+## All set hit npm test
+
+* quick note about npm
+
+    * npm run "custom script" => dev/lint/lint:fix this custom made so we need use npm run dev , lint
+
+    * npm start , test => start and test are built in shortcuts we need hit hit just npm test or start
+
+---
 
 
     
