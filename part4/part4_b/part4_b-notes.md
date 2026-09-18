@@ -229,7 +229,125 @@ Think back to Part 3 when we inspected response headers! What extra text does Ex
 
 ---
 
+## Running test one by one
 
-    
+* When you run npm test, it runs every single test file in your project (average.test.js, reverse.test.js, note_api.test.js).
 
-    
+* solution => 
+
+    * **npm test -- --test-only**
+
+    * **npm test -- tests/note_api.test.js**
+        - The following command only runs the tests found in the tests/note_api.test.js file:
+
+    * **npm test -- --test-name-pattern="a specific note is within the returned notes"**
+        - The --test-name-pattern option can be used for running tests with a specific name:
+
+    * **npm run test -- --test-name-pattern="notes"**
+        - The **provided argument can refer** to the **name of the test** or the **describe block**. It **can also contain just a part of the name**. The following command will **run all** of the tests **that contain notes in their name**:
+
+---
+
+## async/await
+
+* I am going refactor all controllers/notes.js all network request with syntax async/await its replaace all promise chnaing ugly part and make code more readable and undertandable
+
+* E.g
+
+    ```js 
+    <!-- Old way promise chaning -->
+    notesRouter.get('/', (request, response) => {
+    Note.find({})
+        .then(notes => {
+        response.json(notes)
+        })
+    })
+
+    <!-- New Way  -->
+    notesRouter.get('/', async (request, response) => {
+    const notes = await Note.find({})
+    response.json(notes)
+    })
+    ```
+
+---
+
+## Refactor routes with async/await
+
+* gold-standard engineering practice called Regression Prevention / Test-Driven Refactoring:
+
+    - do not blindly made changes do simultaneously like if you are going refactor .get(Note.find({})) made test case for it test it with test cases then only refactor other routes same pattern for all.
+
+---
+
+## optimizing the beforEach function
+
+### The Problem in our current beforeEach:
+
+* Look at how we wrote beforeEach earlier:
+    ```js
+    beforeEach(async () => {
+    await Note.deleteMany({})
+
+    let noteObject = new Note(initialNotes[0])
+    await noteObject.save()
+
+    noteObject = new Note(initialNotes[1])
+    await noteObject.save()
+    })
+    ```
+
+* What if initialNotes had 100 notes? Writing await noteObject.save() 100 times manually is impossible!
+
+---
+
+### The Question: How to save an array of notes cleanly?
+
+* You might think: "Can we use initialNotes.forEach(async (note) => { ... })?"
+
+* The course warns: NO! **forEach does NOT work with async/await!**
+
+---
+
+### Why?
+* forEach does not wait for promises to finish. It fires all the saves and moves on immediately before the database actually finishes saving!
+
+---
+
+### The Solution: Promise.all
+* We create an array of Mongoose objects, turn them into save promises, and wait for all of them together:
+
+```js
+beforeEach(async () => {
+  await Note.deleteMany({})
+
+  const noteObjects = initialNotes
+    .map(note => new Note(note))
+  
+  const promiseArray = noteObjects
+    .map(note => note.save())
+  
+  await Promise.all(promiseArray)
+})
+```
+
+* **How Promise.all works**:
+
+    * **noteObjects**: Creates Mongoose document instances for each item in initialNotes.
+
+    * **promiseArray**: Calls .save() on each document, creating an array of pending Promises.
+
+    * **await Promise.all(promiseArray)**: Executes all save operations in parallel and waits until every single one is done!
+
+* (Alternative bonus tip: You can also use a standard for...of loop with await, or await Note.insertMany(initialNotes)—both are also great!).
+
+
+---
+
+* npx cross-env NODE_ENV=test node index.js
+
+---
+
+### **In production grade code try{...}catch{...} not needed anymore** in express 5 versioning because modern javascript and express 5 handle it just we have made in utils its 4(params) => (error,request,response,next) rest all erros get catch by express and passed to the error handler middlerware
+
+---
